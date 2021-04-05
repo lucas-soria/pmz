@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 import argparse
 import asyncio
+import pathlib
+from path_finding import solve
 
 
 class ArgsError(Exception):
@@ -13,7 +15,7 @@ class DirectoryError(Exception):
 
 def parse():
     parser = argparse.ArgumentParser(description='PMZ (PROJECT: MAZE SOLVER)')
-    parser.add_argument('-i', '--ip', type=int, help='Direccion en donde espera conexiones nuevas', default=['0.0.0.0', '::'])
+    parser.add_argument('-i', '--ip', type=str, help='Direccion en donde espera conexiones nuevas', default=['0.0.0.0', '::'])
     parser.add_argument('-p', '--port', type=int, help='Puerto en donde espera conexiones nuevas', default=80)
 
     args = vars(parser.parse_args())
@@ -22,31 +24,38 @@ def parse():
 
 
 async def handler(reader, writer):
-    data = await reader.read()
+    data = b''
+    while True:
+        request = await reader.read(1024)
+        data += request
+        if len(request) < 1024:
+            break
     try:
-        data = data.decode().splitlines()
+        data_splitted = data.decode().splitlines()
         encabezado_request = ''
-        if data != []:
-            encabezado_request = data[0]
+        if data_splitted != []:
+            encabezado_request = data_splitted[0]
         else:
             encabezado_request = 'Keep Alive'
-        encabezado_request_dividido = encabezado_request.split(' ')
-        if encabezado_request_dividido[0] == 'GET':
-            archivo = encabezado_request_dividido[1]
+        if encabezado_request.split(' ')[0] == 'GET':
+            archivo = encabezado_request.split(' ')[1]
             await manejar_archivo(archivo, writer)
-        if encabezado_request_dividido[0] == 'POST':
-            request = data
-            print(request)
+        elif encabezado_request.split(' ')[0] == 'POST':
+            maze = data.decode().split('------WebKitFormBoundary')[1].split('\n\r\n')[1].split('\n')
+            for cell in range(len(maze)):
+                maze[cell] = list(maze[cell])
+            print(maze)
+            solution = solve(maze)
+            print(solution)
+            await manejar_archivo('/', writer)
     except Exception:
-        archivo = "/500error.html"
-        encabezado_request += "\tERROR"
-        await manejar_archivo(archivo, writer)
+        print('error')
     finally:
         client = writer.get_extra_info('peername')[0]
         try:
             await writer.drain()
         except ConnectionResetError:
-            print(f"Conection lost with {client}")
+            print(f"Connection lost with {client}")
         finally:
             writer.close()
 
@@ -64,7 +73,10 @@ async def run_server():
 
 async def encabezado(cod, ext, pathsize, writer):
     extencion = {"txt": "text/plain",
-                 "html": "text/html"}
+                 "html": "text/html",
+                 "css": "text/css",
+                 "ico": "image/webp",
+                 "js": "text/javascript", }
     codigo = {"OK": "200 OK",
               "NOT": "404 Not Found",
               "ERROR": "500 Internal Server Error"}
@@ -80,8 +92,26 @@ async def manejar_archivo(archivo, writer):
             index = file.read()
         pathsize = len(index)
         await encabezado("OK", "html", pathsize, writer)
+    else:
+        archivo = str(pathlib.Path(__file__).parent.absolute()) + archivo
+        try:
+            if 'favicon' in archivo:
+                archivo = str(pathlib.Path(__file__).parent.absolute()) + '/static/favicon.ico'
+            file = open(archivo, "rb")
+            cod = "OK"
+        except FileNotFoundError:
+            print('Error 404')
+        except IsADirectoryError:
+            raise DirectoryError("La direccion corresponde a un directorio")
+        pathsize = pathlib.Path(archivo).stat().st_size
+        await encabezado(cod, archivo.split(".")[-1], pathsize, writer)
     if archivo == '/index.html':
         writer.write(index)
+    else:
+        texto = file.read()
+        while texto:
+            writer.write(texto)
+            texto = file.read()
 
 
 if __name__ == "__main__":
