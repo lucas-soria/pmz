@@ -2,7 +2,8 @@
 import argparse
 import asyncio
 import pathlib
-from path_finding import solve
+from Maze import Maze
+from Table import Table
 
 
 class ArgsError(Exception):
@@ -45,11 +46,18 @@ async def handler(reader, writer):
             for cell in range(len(maze)):
                 maze[cell] = list(maze[cell])
             print(maze)
-            solution = solve(maze)
-            print(solution)
-            await manejar_archivo('/', writer)
+            maze = Maze(maze)
+            solution = maze.solve()
+            print(maze.tree)
+            print(maze.path)
+            web = Table(maze.maze, solution)
+            site_generated = bytearray(web.generate_html(), 'utf-8')
+            pathsize = len(site_generated)
+            await encabezado("OK", "html", pathsize, writer)
+            writer.write(site_generated)
     except Exception:
         print('error')
+        print(Exception.with_traceback())
     finally:
         client = writer.get_extra_info('peername')[0]
         try:
