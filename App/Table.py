@@ -6,9 +6,8 @@ class Table:
         self.start = """<!DOCTYPE html5>
 <html>
     <head>
-        <title>PMZ - Index</title>
+        <title>PMZ - Solution</title>
         <link rel="stylesheet" href="/static/styles.css">
-        <script src="/static/script.js"></script>
     </head>
     <body>
       <div class="header">
@@ -27,7 +26,7 @@ class Table:
           </nav>
         </div>
       </div>
-      <div class="content">
+      <div class="maze-content">
         <table class="maze">
         """
         self.end = """        </table>

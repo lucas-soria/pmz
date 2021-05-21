@@ -1,12 +1,23 @@
-from Tree import Tree, Parent, Child
+from .Tree import Tree, Parent, Child
 
 
 class Maze:
 
     def __init__(self, maze) -> None:
-        self.maze = maze
+        self.maze = self.separator(maze)
         self.tree = None
         self.path = None
+
+    def separator(self, maze):
+        maze_as_table = []
+        maze = maze.split('\n')
+        for row in maze:
+            row_list = []
+            for cell in row:
+                row_list.append(cell)
+            if len(row_list) != 0:
+                maze_as_table.append(row_list)
+        return maze_as_table
 
     def posible_moves(self, current, previous, tree) -> Tree:
         up = (current[0] - 1, current[1])
