@@ -19,10 +19,10 @@ class Table:
         </div>
         <div class="right">
           <nav class="active">
-            <a href="/index.html">Inicio</a>
+            <a href="/index.html">Index</a>
           </nav>
           <nav class="nonactive">
-            <a href="/index.html">Guardados</a>
+            <a href="/index.html">Saved</a>
           </nav>
         </div>
       </div>
@@ -36,7 +36,7 @@ class Table:
         """
         self.middle = None
 
-    def generate_html(self):
+    def generate_html(self) -> str:
         self.middle = ""
         for row in range(len(self.maze)):
             self.middle += "<tr>"

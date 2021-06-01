@@ -68,12 +68,11 @@ body {
     height: inherit;
     display: inline-block;
     line-height: 75px;
-    padding: 0 20px;
     margin: 0;
 }
 
 .right a {
-    height: 75px;
+    padding: 30px 25px;
     color: #FFF;
     text-decoration: none;
 }
