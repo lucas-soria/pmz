@@ -25,7 +25,7 @@ class Maze:
         return maze_as_table
 
     def posible_moves(self, current, previous, tree) -> Tree:
-        with futures.ProcessPoolExecutor(max_workers=4) as child_processes:
+        with futures.ProcessPoolExecutor(max_workers=3) as child_processes:
             if queue.empty():
                 up = (current[0] - 1, current[1])
                 down = (current[0] + 1, current[1])
@@ -67,14 +67,20 @@ class Maze:
                 self.path = self.reverse_order(tree.get_parent(), [])
 
     def solve(self) -> list:
+        start = None
+        end = None
         for i in range(len(self.maze)):
             for j in range(len(self.maze[i])):
                 if self.maze[i][j] == '*':
                     start = (i, j)
-        self.tree = Parent('*')
-        start_tree = Parent(start)
-        start_tree = self.posible_moves(start, start, start_tree)
-        self.tree.add_node(start_tree)
-        queue.get()
-        self.find_path(self.tree)
-        return self.path
+                if self.maze[i][j] == '+':
+                    end = (i, j)
+        if start and end:
+            self.tree = Parent('*')
+            start_tree = Parent(start)
+            start_tree = self.posible_moves(start, start, start_tree)
+            self.tree.add_node(start_tree)
+            queue.get()
+            self.find_path(self.tree)
+            return self.path
+        return []

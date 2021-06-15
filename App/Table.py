@@ -21,9 +21,6 @@ class Table:
           <nav class="active">
             <a href="/index.html">Index</a>
           </nav>
-          <nav class="nonactive">
-            <a href="/index.html">Saved</a>
-          </nav>
         </div>
       </div>
       <div class="maze-content">
