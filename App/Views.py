@@ -20,12 +20,12 @@ class Index(View):
         data = await self.request.post()
         maze_file = data['maze']
         filename = maze_file.filename
+        if '.txt' not in filename:
+            raise Exception
         txt_file = maze_file.file
         content = txt_file.read().decode("utf-8")
         maze = Maze(content)
         solution = maze.solve()
-        if '.txt' not in filename:
-            raise Exception
         web_solution = Table(maze.maze, solution)
         site_generated = web_solution.generate_html()
         return Response(body=site_generated, status=200, content_type='text/html')

@@ -1,4 +1,4 @@
-FROM python
+FROM python:3.7
 
 WORKDIR /home/lucas/Documents/compu\ 2/pmz
 
